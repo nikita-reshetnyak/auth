@@ -11,8 +11,6 @@ linters:
     - typecheck
     - unused
 linters-settings:
-  govet:
-    shadow: true
   gocyclo:
     min-complexity: 10 # Минимальная сложность для выявления цикломатической сложности
   misspell:
