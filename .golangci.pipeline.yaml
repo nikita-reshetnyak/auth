@@ -21,9 +21,10 @@ issues:
   max-same-issues: 50
 
 output:
- formats: colored-line-number # Формат вывода (можно изменить на json, text и др.)
- print-issued-lines: true
- print-linter-name: true
+  formats:
+    - format: colored-line-number
+  print-issued-lines: false
+  print-linter-name: false
 
 run:
   timeout: 5m
