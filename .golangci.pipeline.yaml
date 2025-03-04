@@ -1,52 +1,42 @@
-# More info on config here: https://golangci-lint.run/usage/configuration/#config-file
-# .golangci.yaml
-
-# Включаем линтеры по умолчанию
 linters:
+  disable-all: true
   enable:
-    - gosimple
-    - govet
     - errcheck
-    - staticcheck
-    - unused
-    - ineffassign
-    - typecheck
-    - bodyclose
-    - gocritic
-    - gofmt
+    - goconst
     - goimports
+    - gosec
+    - govet
+    - ineffassign
     - revive
-    - unconvert
-    - gocyclo
-    - misspell
-    - prealloc
-    - whitespace
-
-# Настройки для линтеров
+    - typecheck
+    - unused
 linters-settings:
   govet:
-    check-shadowing: true
+    shadowing: true
   gocyclo:
     min-complexity: 10 # Минимальная сложность для выявления цикломатической сложности
   misspell:
-    locale: US # Локаль для проверки орфографии
-
-# Настройки запуска
-run:
-  skip-dirs:
-    - vendor # Пропускаем директорию vendor
-  skip-files:
-    - ".*_test.go" # Пропускаем тестовые файлы (по желанию)
-  tests: false # Не анализировать тестовые файлы
-
-# Настройки вывода
-output:
-  format: colored-line-number # Формат вывода (можно изменить на json, text и др.)
-  print-issued-lines: true
-  print-linter-name: true
-
-# Дополнительные настройки
+    locale: US 
 issues:
   exclude-use-default: false
   max-issues-per-linter: 50
   max-same-issues: 50
+
+output:
+ formats: colored-line-number # Формат вывода (можно изменить на json, text и др.)
+ print-issued-lines: true
+ print-linter-name: true
+
+run:
+  timeout: 5m
+  relative-path-mode: gomod
+  issues-exit-code: 2
+  
+  tests: false
+  build-tags:
+    - mytag
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+  allow-serial-runners: true
+  go: '1.22.4'
+  concurrency: 4
