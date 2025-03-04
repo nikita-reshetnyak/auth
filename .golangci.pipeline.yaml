@@ -1,51 +1,52 @@
 # More info on config here: https://golangci-lint.run/usage/configuration/#config-file
-run:
-  concurrency: 8
-  timeout: 10m
-  issues-exit-code: 1
-  tests: true
-  issues:
-    exclude-files:
-      - \.pb\.go$
-      - \.pb\.gw\.go$
-    exclude-dirs:
-      - bin
-      - vendor
-      - var
-      - tmp
-      - .cache
+# .golangci.yaml
 
+# Включаем линтеры по умолчанию
+linters:
+  enable:
+    - gosimple
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - ineffassign
+    - typecheck
+    - bodyclose
+    - gocritic
+    - gofmt
+    - goimports
+    - revive
+    - unconvert
+    - gocyclo
+    - misspell
+    - prealloc
+    - whitespace
+
+# Настройки для линтеров
+linters-settings:
+  govet:
+    check-shadowing: true
+  gocyclo:
+    min-complexity: 10 # Минимальная сложность для выявления цикломатической сложности
+  misspell:
+    locale: US # Локаль для проверки орфографии
+
+# Настройки запуска
+run:
+  skip-dirs:
+    - vendor # Пропускаем директорию vendor
+  skip-files:
+    - ".*_test.go" # Пропускаем тестовые файлы (по желанию)
+  tests: false # Не анализировать тестовые файлы
+
+# Настройки вывода
 output:
-  formats: colored-line-number
+  format: colored-line-number # Формат вывода (можно изменить на json, text и др.)
   print-issued-lines: true
   print-linter-name: true
 
-linters-settings:
-  govet:
-    shadow: true
-  dupl:
-    threshold: 100
-  goconst:
-    min-len: 2
-    min-occurrences: 2
-
-linters:
-  disable-all: true
-  enable:
-    - errcheck
-    - goconst
-    - goimports
-    - gosec
-    - govet
-    - ineffassign
-    - revive
-    - typecheck
-    - unused
-
+# Дополнительные настройки
 issues:
   exclude-use-default: false
-  exclude:
-    - G104 # _ instead of err checks
-    - exported func .* returns unexported type .*, which can be annoying to use
-    - should have a package comment
-    - don't use an underscore in package name
+  max-issues-per-linter: 50
+  max-same-issues: 50
