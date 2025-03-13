@@ -25,3 +25,8 @@ generate-auth-proto:
 
 lint:
 	$(LOCAL_BIN)/golangci-lint run ./... --config .golangci.pipeline.yaml
+
+docker-build-and-push:
+	docker buildx build --no-cache --platform linux/amd64 -t cr.selcloud.ru/nick-resh/test-server:v0.0.1 .
+	docker login -u token -p CRgAAAAA741BVz2a4HaOiF8CCvObv3KQAXzDaPej cr.selcloud.ru/nick-resh
+	docker push cr.selcloud.ru/nick-resh/test-server:v0.0.1
