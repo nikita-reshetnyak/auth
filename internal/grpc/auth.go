@@ -7,7 +7,6 @@ import (
 	models "github.com/nikita-reshetnyak/auth/internal/domains/models"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Auth interface {
@@ -19,7 +18,7 @@ type Auth interface {
 		password_confirm string,
 		role models.UserRole,
 	) (int64, error)
-	Get(context.Context, int64) (int64, string, string, models.UserRole, *timestamppb.Timestamp, *timestamppb.Timestamp, error)
+	Get(context.Context, int64) (models.User, error)
 	Update(ctx context.Context, id int64, name string, email string) (*emptypb.Empty, error)
 	Delete(ctx context.Context, id int64) (*emptypb.Empty, error)
 }
@@ -32,17 +31,17 @@ func Register(grpcServer *grpc.Server, auth Auth) {
 	v1.RegisterAuthV1Server(grpcServer, &serverApi{auth: auth})
 }
 func (s *serverApi) Get(ctx context.Context, req *v1.GetRequest) (*v1.GetResponse, error) {
-	id, name, email, role, createdAt, updatedAt, err := s.auth.Get(ctx, req.Id)
+	user, err := s.auth.Get(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
 	return &v1.GetResponse{
-		Id:        id,
-		Name:      name,
-		Email:     email,
-		Role:      v1.Role(role),
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+		Id:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Role:      v1.Role(user.Role),
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
 func (s *serverApi) Create(ctx context.Context, req *v1.CreateRequest) (*v1.CreateResponse, error) {
