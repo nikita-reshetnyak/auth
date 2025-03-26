@@ -30,7 +30,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to load pg config: %v", err)
 	}
-	application := app.New(grpcPort, pgConfig.DSN())
+	grpcConfig, err := config.NewGRPCConfig()
+	if err != nil {
+		log.Fatalf("failed to load grpc config: %v", err)
+	}
+	application := app.New(grpcConfig.Address(), pgConfig.DSN())
 
 	application.GRPCServer.Run()
 

@@ -10,7 +10,7 @@ type App struct {
 	GRPCServer *grpcapp.App
 }
 
-func New(grpcport int, configPath string) *App {
+func New(grpcport string, configPath string) *App {
 	pool, err := postgres_strg.New(configPath)
 	if err != nil {
 		panic(err)

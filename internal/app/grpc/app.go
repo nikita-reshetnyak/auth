@@ -11,10 +11,10 @@ import (
 
 type App struct {
 	grpcServer *grpc.Server
-	port       int
+	port       string
 }
 
-func New(auth authgrpc.Auth, port int) *App {
+func New(auth authgrpc.Auth, port string) *App {
 	server := grpc.NewServer()
 	authgrpc.Register(server, auth)
 	return &App{
@@ -23,7 +23,7 @@ func New(auth authgrpc.Auth, port int) *App {
 	}
 }
 func (a *App) Run() error {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", a.port))
+	lis, err := net.Listen("tcp", a.port)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
