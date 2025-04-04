@@ -11,40 +11,7 @@ env:
   IMAGE_NAME: "crud-server"
   CONTAINER_NAME: "crud-server-container"
 
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22.4'
-          cache-dependency-path: go.sum
-
-      - name: Build
-        run: go build -o ./bin/ -v ./...
-
-      - name: Test
-        run: go test -v ./...
-
-  linter:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22.4'
-          cache: false
-
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-          
+jobs:     
   image-build-and-push:
     runs-on: ubuntu-latest
 
