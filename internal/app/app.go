@@ -1,21 +1,97 @@
 package app
 
 import (
-	grpcapp "github.com/nikita-reshetnyak/auth/internal/app/grpc"
-	authservices "github.com/nikita-reshetnyak/auth/internal/services/auth"
-	postgres_strg "github.com/nikita-reshetnyak/auth/internal/storage/postgres"
+	"context"
+	"log"
+	"net"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
+
+	desc "github.com/nikita-reshetnyak/auth/gen/auth_v1"
+	"github.com/nikita-reshetnyak/auth/internal/closer"
+	"github.com/nikita-reshetnyak/auth/internal/config"
 )
 
 type App struct {
-	GRPCServer *grpcapp.App
+	serviceProvider *serviceProvider
+	grpcServer      *grpc.Server
 }
 
-func New(grpcport string, configPath string) *App {
-	pool, err := postgres_strg.New(configPath)
+func NewApp(ctx context.Context) (*App, error) {
+	a := &App{}
+
+	err := a.initDeps(ctx)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	authService := authservices.New(pool)
-	grpcApp := grpcapp.New(authService, grpcport)
-	return &App{GRPCServer: grpcApp}
+
+	return a, nil
+}
+
+func (a *App) Run() error {
+	defer func() {
+		closer.CloseAll()
+		closer.Wait()
+	}()
+
+	return a.runGRPCServer()
+}
+
+func (a *App) initDeps(ctx context.Context) error {
+	inits := []func(context.Context) error{
+		a.initConfig,
+		a.initServiceProvider,
+		a.initGRPCServer,
+	}
+
+	for _, f := range inits {
+		err := f(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (a *App) initConfig(_ context.Context) error {
+	err := config.Load("local.env")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *App) initServiceProvider(_ context.Context) error {
+	a.serviceProvider = NewServiceProvider()
+	return nil
+}
+
+func (a *App) initGRPCServer(ctx context.Context) error {
+	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+
+	reflection.Register(a.grpcServer)
+
+	desc.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.NoteImpl(ctx))
+
+	return nil
+}
+
+func (a *App) runGRPCServer() error {
+	log.Printf("GRPC server is running on %s", a.serviceProvider.GRPCConfig().Address())
+
+	list, err := net.Listen("tcp", a.serviceProvider.GRPCConfig().Address())
+	if err != nil {
+		return err
+	}
+
+	err = a.grpcServer.Serve(list)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
